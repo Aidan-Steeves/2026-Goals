@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 Goal Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            color: #2e7d32;
+            font-size: 24px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #2e7d32;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+        }
+
+        .back-btn:hover {
+            color: #1b5e20;
+        }
+
+        .category-card {
+            background: linear-gradient(135deg, #43a047 0%, #66bb6a 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 24px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .category-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .category-card h2 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .category-card p {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+        }
+
+        .category-actions {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .goal-card, .step-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #66bb6a;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .goal-card:hover, .step-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .item-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: #43a047;
+        }
+
+        .item-text {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .item-title {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .item-title.completed {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .deadline {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .deadline.overdue {
+            color: #d32f2f;
+            font-weight: 500;
+        }
+
+        .step-count {
+            font-size: 14px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .item-actions button {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 16px;
+        }
+
+        .item-actions button:hover {
+            color: #43a047;
+        }
+
+        .item-actions button.delete:hover {
+            color: #d32f2f;
+        }
+
+        .add-btn {
+            width: 100%;
+            background: white;
+            border: 2px dashed #81c784;
+            border-radius: 8px;
+            padding: 16px;
+            color: #43a047;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .add-btn:hover {
+            background: #f1f8e9;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .modal h2 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #43a047;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.primary {
+            background: #43a047;
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            background: #2e7d32;
+        }
+
+        .modal-btn.secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .color-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .color-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #333;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn hidden" id="backBtn">← Back</button>
+            <h1 id="headerTitle">2026 Goals</h1>
+            <div style="width: 100px;"></div>
+        </div>
+
+        <div id="content"></div>
+    </div>
+
+    <script>
+        var categories = [];
+        var currentView = 'categories';
+        var selectedCategory = null;
+        var selectedGoal = null;
+        var selectedColorIndex = 0;
+
+        var colorOptions = [
+            { name: 'Green', start: '#43a047', end: '#66bb6a' },
+            { name: 'Blue', start: '#1e88e5', end: '#42a5f5' },
+            { name: 'Purple', start: '#8e24aa', end: '#ab47bc' },
+            { name: 'Orange', start: '#fb8c00', end: '#ffa726' },
+            { name: 'Red', start: '#e53935', end: '#ef5350' },
+            { name: 'Teal', start: '#00897b', end: '#26a69a' },
+            { name: 'Pink', start: '#d81b60', end: '#ec407a' },
+            { name: 'Indigo', start: '#3949ab', end: '#5c6bc0' },
+            { name: 'Lime', start: '#7cb342', end: '#9ccc65' },
+            { name: 'Amber', start: '#ffa000', end: '#ffb300' }
+        ];
+
+        function loadData() {
+            var saved = localStorage.getItem('goalTrackerData');
+            if (saved) {
+                categories = JSON.parse(saved);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('goalTrackerData', JSON.stringify(categories));
+        }
+
+        loadData();
+        render();
+
+        function createModal(title, inputType, inputPlaceholder, initialValue, showColors, callback) {
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            
+            var modal = document.createElement('div');
+            modal.className = 'modal';
+            
+            var h2 = document.createElement('h2');
+            h2.textContent = title;
+            modal.appendChild(h2);
+            
+            if (showColors) {
+                var grid = document.createElement('div');
+                grid.className = 'color-picker-grid';
+                
+                var idx = 0;
+                while (idx < colorOptions.length) {
+                    var opt = document.createElement('div');
+                    opt.className = 'color-option';
+                    var c1 = colorOptions[idx].start;
+                    var c2 = colorOptions[idx].end;
+                    opt.style.backgroundImage = 'linear-gradient(135deg, ' + c1 + ', ' + c2 + ')';
+                    opt.dataset.idx = idx;
+                    
+                    if (initialValue) {
+                        if (initialValue.start === c1) {
+                            opt.className = 'color-option selected';
+                            selectedColorIndex = idx;
+                        }
+                    }
+                    
+                    grid.appendChild(opt);
+                    idx = idx + 1;
+                }
+                
+                grid.onclick = function(ev) {
+                    var target = ev.target;
+                    if (target.dataset.idx) {
+                        var allOpts = grid.querySelectorAll('.color-option');
+                        var j = 0;
+                        while (j < allOpts.length) {
+                            allOpts[j].className = 'color-option';
+                            j = j + 1;
+                        }
+                        target.className = 'color-option selected';
+                        selectedColorIndex = parseInt(target.dataset.idx);
+                    }
+                };
+                
+                modal.appendChild(grid);
+            }
+            
+            var input = document.createElement('input');
+            input.className = 'modal-input';
+            input.type = inputType;
+            input.placeholder = inputPlaceholder;
+            if (inputType === 'text') {
+                if (initialValue) {
+                    input.value = initialValue;
+                }
+            } else if (inputType === 'date') {
+                if (initialValue) {
+                    input.value = initialValue;
+                }
+            }
+            modal.appendChild(input);
+            
+            var btnDiv = document.createElement('div');
+            btnDiv.className = 'modal-buttons';
+            
+            var cancelBtn = document.createElement('button');
+            cancelBtn.className = 'modal-btn secondary';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.onclick = function() {
+                document.body.removeChild(overlay);
+            };
+            btnDiv.appendChild(cancelBtn);
+            
+            var saveBtn = document.createElement('button');
+            saveBtn.className = 'modal-btn primary';
+            saveBtn.textContent = 'Save';
+            saveBtn.onclick = function() {
+                var val = input.value.trim();
+                if (val) {
+                    if (showColors) {
+                        callback(val, colorOptions[selectedColorIndex]);
+                    } else {
+                        callback(val);
+                    }
+                    document.body.removeChild(overlay);
+                }
+            };
+            btnDiv.appendChild(saveBtn);
+            
+            modal.appendChild(btnDiv);
+            overlay.appendChild(modal);
+            
+            overlay.onclick = function(ev) {
+                if (ev.target === overlay) {
+                    document.body.removeChild(overlay);
+                }
+            };
+            
+            input.onkeypress = function(ev) {
+                if (ev.keyCode === 13) {
+                    saveBtn.click();
+                }
+            };
+            
+            document.body.appendChild(overlay);
+            setTimeout(function() { input.focus(); }, 100);
+        }
+
+        function render() {
+            var content = document.getElementById('content');
+            var backBtn = document.getElementById('backBtn');
+            var headerTitle = document.getElementById('headerTitle');
+
+            if (currentView === 'categories') {
+                backBtn.classList.add('hidden');
+                headerTitle.textContent = '2026 Goals';
+                renderCategories(content);
+            } else if (currentView === 'goals') {
+                backBtn.classList.remove('hidden');
+                headerTitle.textContent = selectedCategory.name;
+                renderGoals(content);
+            } else if (currentView === 'steps') {
+                backBtn.classList.remove('hidden');
+                headerTitle.textContent = selectedGoal.name;
+                renderSteps(content);
+            }
+        }
+
+        function renderCategories(container) {
+            var html = '';
+            for (var i = 0; i < categories.length; i++) {
+                var cat = categories[i];
+                var color = cat.color || colorOptions[0];
+                html += '<div class="category-card" style="background: linear-gradient(135deg, ' + color.start + ', ' + color.end + ')" onclick="openCategory(' + cat.id + ')">';
+                html += '<div class="category-actions" onclick="event.stopPropagation()">';
+                html += '<button class="icon-btn" onclick="editCategoryColor(' + cat.id + ')">🎨</button>';
+                html += '<button class="icon-btn" onclick="editCategory(' + cat.id + ')">✏️</button>';
+                html += '<button class="icon-btn" onclick="deleteCategory(' + cat.id + ')">🗑️</button>';
+                html += '</div>';
+                html += '<h2>' + cat.name + '</h2>';
+                html += '<p>' + cat.goals.length + ' goals</p>';
+                html += '</div>';
+            }
+            html += '<button class="add-btn" onclick="addCategory()">➕ Add Category</button>';
+            container.innerHTML = html;
+        }
+
+        function renderGoals(container) {
+            var html = '';
+            for (var i = 0; i < selectedCategory.goals.length; i++) {
+                var goal = selectedCategory.goals[i];
+                var color = goal.color || colorOptions[0];
+                html += '<div class="goal-card" style="border-left-color: ' + color.start + '">';
+                html += '<div class="item-content">';
+                html += '<input type="checkbox" class="checkbox" ' + (goal.completed ? 'checked' : '') + ' onchange="toggleGoal(' + goal.id + ')" style="accent-color: ' + color.start + '">';
+                html += '<div class="item-text" onclick="openGoal(' + goal.id + ')">';
+                html += '<div class="item-title ' + (goal.completed ? 'completed' : '') + '">' + goal.name + '</div>';
+                
+                if (goal.deadline) {
+                    var overdue = isOverdue(goal.deadline) && !goal.completed;
+                    html += '<div class="deadline ' + (overdue ? 'overdue' : '') + '">';
+                    html += '📅 ' + formatDate(goal.deadline);
+                    if (overdue) html += ' (Overdue)';
+                    html += '</div>';
+                }
+                
+                html += '<div class="step-count">' + goal.steps.length + ' steps</div>';
+                html += '</div>';
+                html += '<div class="item-actions" onclick="event.stopPropagation()">';
+                html += '<button onclick="editGoalColor(' + goal.id + ')">🎨</button>';
+                html += '<button onclick="setDeadline(' + goal.id + ')">📅</button>';
+                html += '<button onclick="editGoal(' + goal.id + ')">✏️</button>';
+                html += '<button class="delete" onclick="deleteGoal(' + goal.id + ')">🗑️</button>';
+                html += '</div></div></div>';
+            }
+            html += '<button class="add-btn" onclick="addGoal()">➕ Add Goal</button>';
+            container.innerHTML = html;
+        }
+
+        function renderSteps(container) {
+            var html = '';
+            var goalColor = selectedGoal.color || colorOptions[0];
+            for (var i = 0; i < selectedGoal.steps.length; i++) {
+                var step = selectedGoal.steps[i];
+                html += '<div class="step-card" style="border-left-color: ' + goalColor.start + '">';
+                html += '<div class="item-content">';
+                html += '<input type="checkbox" class="checkbox" ' + (step.completed ? 'checked' : '') + ' onchange="toggleStep(' + step.id + ')" style="accent-color: ' + goalColor.start + '">';
+                html += '<div class="item-text"><div class="item-title ' + (step.completed ? 'completed' : '') + '">' + step.name + '</div></div>';
+                html += '<div class="item-actions">';
+                html += '<button onclick="editStep(' + step.id + ')">✏️</button>';
+                html += '<button class="delete" onclick="deleteStep(' + step.id + ')">🗑️</button>';
+                html += '</div></div></div>';
+            }
+            html += '<button class="add-btn" onclick="addStep()">➕ Add Step</button>';
+            container.innerHTML = html;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            var date = new Date(dateString);
+            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
+        }
+
+        function isOverdue(deadline) {
+            return deadline && new Date(deadline) < new Date();
+        }
+
+        document.getElementById('backBtn').onclick = function() {
+            if (currentView === 'steps') {
+                currentView = 'goals';
+                selectedGoal = null;
+            } else if (currentView === 'goals') {
+                currentView = 'categories';
+                selectedCategory = null;
+            }
+            render();
+        };
+
+        function addCategory() {
+            createModal('New Category', 'text', 'Enter category name', '', true, function(name, color) {
+                categories.push({ id: Date.now(), name: name, color: color, goals: [] });
+                saveData();
+                render();
+            });
+        }
+
+        function openCategory(id) {
+            for (var i = 0; i < categories.length; i++) {
+                if (categories[i].id === id) {
+                    selectedCategory = categories[i];
+                    break;
+                }
+            }
+            currentView = 'goals';
+            render();
+        }
+
+        function editCategory(id) {
+            for (var i = 0; i < categories.length; i++) {
+                if (categories[i].id === id) {
+                    var cat = categories[i];
+                    createModal('Edit Category', 'text', 'Category name', cat.name, false, function(name) {
+                        cat.name = name;
+                        saveData();
+                        render();
+                    });
+                    break;
+                }
+            }
+        }
+
+        function editCategoryColor(id) {
+            for (var i = 0; i < categories.length; i++) {
+                if (categories[i].id === id) {
+                    var cat = categories[i];
+                    createModal('Change Color', 'text', 'Category name', cat.name, true, function(name, color) {
+                        cat.name = name;
+                        cat.color = color;
+                        saveData();
+                        render();
+                    });
+                    break;
+                }
+            }
+        }
+
+        function deleteCategory(id) {
+            if (confirm('Delete this category and all its goals?')) {
+                var newCats = [];
+                for (var i = 0; i < categories.length; i++) {
+                    if (categories[i].id !== id) newCats.push(categories[i]);
+                }
+                categories = newCats;
+                saveData();
+                render();
+            }
+        }
+
+        function addGoal() {
+            createModal('New Goal', 'text', 'Enter goal name', '', true, function(name, color) {
+                selectedCategory.goals.push({ 
+                    id: Date.now(), 
+                    name: name,
+                    color: color,
+                    deadline: null, 
+                    completed: false, 
+                    steps: [] 
+                });
+                saveData();
+                render();
+            });
+        }
+
+        function openGoal(id) {
+            for (var i = 0; i < selectedCategory.goals.length; i++) {
+                if (selectedCategory.goals[i].id === id) {
+                    selectedGoal = selectedCategory.goals[i];
+                    break;
+                }
+            }
+            currentView = 'steps';
+            render();
+        }
+
+        function toggleGoal(id) {
+            for (var i = 0; i < selectedCategory.goals.length; i++) {
+                if (selectedCategory.goals[i].id === id) {
+                    selectedCategory.goals[i].completed = !selectedCategory.goals[i].completed;
+                    break;
+                }
+            }
+            saveData();
+            render();
+        }
+
+        function setDeadline(id) {
+            for (var i = 0; i < selectedCategory.goals.length; i++) {
+                if (selectedCategory.goals[i].id === id) {
+                    var goal = selectedCategory.goals[i];
+                    createModal('Set Deadline', 'date', '', goal.deadline || '', false, function(date) {
+                        goal.deadline = date;
+                        saveData();
+                        render();
+                    });
+                    break;
+                }
+            }
+        }
+
+        function editGoal(id) {
+            for (var i = 0; i < selectedCategory.goals.length; i++) {
+                if (selectedCategory.goals[i].id === id) {
+                    var goal = selectedCategory.goals[i];
+                    createModal('Edit Goal', 'text', 'Goal name', goal.name, false, function(name) {
+                        goal.name = name;
+                        saveData();
+                        render();
+                    });
+                    break;
+                }
+            }
+        }
+
+        function editGoalColor(id) {
+            for (var i = 0; i < selectedCategory.goals.length; i++) {
+                if (selectedCategory.goals[i].id === id) {
+                    var goal = selectedCategory.goals[i];
+                    createModal('Change Color', 'text', 'Goal name', goal.name, true, function(name, color) {
+                        goal.name = name;
+                        goal.color = color;
+                        saveData();
+                        render();
+                    });
+                    break;
+                }
+            }
+        }
+
+        function deleteGoal(id) {
+            if (confirm('Delete this goal and all its steps?')) {
+                var newGoals = [];
+                for (var i = 0; i < selectedCategory.goals.length; i++) {
+                    if (selectedCategory.goals[i].id !== id) newGoals.push(selectedCategory.goals[i]);
+                }
+                selectedCategory.goals = newGoals;
+                saveData();
+                render();
+            }
+        }
+
+        function addStep() {
+            createModal('New Step', 'text', 'Enter step name', '', false, function(name) {
+                selectedGoal.steps.push({ id: Date.now(), name: name, completed: false });
+                saveData();
+                render();
+            });
+        }
+
+        function toggleStep(id) {
+            for (var i = 0; i < selectedGoal.steps.length; i++) {
+                if (selectedGoal.steps[i].id === id) {
+                    selectedGoal.steps[i].completed = !selectedGoal.steps[i].completed;
+                    break;
+                }
+            }
+            saveData();
+            render();
+        }
+
+        function editStep(id) {
+            for (var i = 0; i < selectedGoal.steps.length; i++) {
+                if (selectedGoal.steps[i].id === id) {
+                    var step = selectedGoal.steps[i];
+                    createModal('Edit Step', 'text', 'Step name', step.name, false, function(name) {
+                        step.name = name;
+                        saveData();
+                        render();
+                    });
+                    break;
+                }
+            }
+        }
+
+        function deleteStep(id) {
+            if (confirm('Delete this step?')) {
+                var newSteps = [];
+                for (var i = 0; i < selectedGoal.steps.length; i++) {
+                    if (selectedGoal.steps[i].id !== id) newSteps.push(selectedGoal.steps[i]);
+                }
+                selectedGoal.steps = newSteps;
+                saveData();
+                render();
+            }
+        }
+    </script>
+</body>
+</html>
